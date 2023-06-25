@@ -131,38 +131,5 @@ def log_gen(log_data):
     return
 
 
-# TODO: implement
-def debugPrint():
-    return
-
-
 def generate_typetime(message):
     return len(message) / settings.t_speed_multiplier
-
-
-# Timer used to reset the queue. TODO: Fix
-class ResettableTimer:
-    def __init__(self, seconds):
-        self.seconds = seconds
-        self.task = None
-
-    # Start the timer
-    async def start(self):
-        if settings.debug_mode:
-            print("Timer Started")
-        while True:
-            if settings.debug_mode:
-                print(f"DEBUG: Queue Reset timer started for {self.seconds} seconds.")
-
-            await asyncio.sleep(self.seconds)
-
-            if settings.debug_mode:
-                print(f"DEBUG: Queue Reset.")
-
-    def stop(self):
-        if self.task is not None:
-            self.task.cancel()
-
-    async def reset(self):
-        self.stop()
-        self.task = asyncio.create_task(self.start())

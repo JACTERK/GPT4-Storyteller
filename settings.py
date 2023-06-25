@@ -52,3 +52,23 @@ generate_images = True
 # -------------------------------------------------------- #
 
 debug_mode = True
+
+
+# ------------------- Helper Functions ------------------- #
+# Function that takes a string 'string', and writes it to a file 'settings.py' next to the line starting with 'prompt ='
+# This function is used to update the prompt in settings.py
+def update_prompt(string):
+    # Open settings.py in read mode
+    with open("settings.py", "r") as file:
+        # Read all lines from settings.py
+        lines = file.readlines()
+        # Iterate through each line
+        for i in range(len(lines)):
+            # Check if the line starts with 'prompt ='
+            if lines[i].startswith("prompt ="):
+                # If it does, replace the line with 'prompt = ' + string
+                lines[i] = "prompt = \"" + string + "\"\n"
+    # Open settings.py in write mode
+    with open("settings.py", "w") as file:
+        # Write all lines to settings.py
+        file.writelines(lines)
