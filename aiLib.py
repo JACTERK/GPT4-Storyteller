@@ -14,28 +14,6 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-# Function to determine the target of conversation, and will return true if the conversation is directed at the bot.
-# TODO: Not fully implemented
-def determine_Conv_Target(message):
-    # Appends phrase to be checked
-    temp_msg = [settings.prompt, message]
-
-    while True:
-        # Generate Response using Chat API
-        response = openai.ChatCompletion.create(
-            model=settings.model_checker, messages=temp_msg
-        )
-
-        if "true" or "t" in response["choices"][0]["message"]["content"].lower():
-            return True
-
-        if "false" or "f" in response["choices"][0]["message"]["content"].lower():
-            return False
-
-        else:
-            continue
-
-
 # Function to generate response
 def determine_Response(prompt):
     # Debug
