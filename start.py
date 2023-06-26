@@ -51,8 +51,8 @@ async def on_message(message):
 
     # Detects for words "imagine" or "draw", as well as the trigger name and generates an image
     elif (
-        settings.trigger_name in message.content.lower()
-        and ("imagine " or "draw ") in message.content.lower()
+            settings.trigger_name in message.content.lower()
+            and ("imagine " or "draw ") in message.content.lower()
     ):
 
         # Create image generation dictionary to store data
@@ -108,6 +108,7 @@ async def on_message(message):
 
         return
 
+print("Starting bot...")
 
 # Run discord bot instance
 discord_client.run(DISCORD_TOKEN)
