@@ -7,6 +7,8 @@ import asyncio
 import random
 from dotenv import load_dotenv
 
+# TODO: allow user to add keys in the command line to make it easier to get through first time startup
+
 load_dotenv()
 
 # First time setup

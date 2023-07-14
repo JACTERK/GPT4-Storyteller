@@ -15,7 +15,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 # Function to generate response
-def determine_Response(prompt):
+def generate_message(prompt):
     # Debug
     if settings.debug_mode:
         print(prompt)
@@ -28,7 +28,7 @@ def determine_Response(prompt):
 
 
 # Function to generate an image from a prompt
-def generate_Image(imagedict):
+def generate_image(imagedict):
     # Generate image
     try:
         url = openai.Image.create(prompt=imagedict["prompt"], n=1, size="1024x1024")
