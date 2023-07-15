@@ -56,6 +56,10 @@ generate_images = False
 
 debug = True
 
+# ------------------- Wiki Settings ---------------------- #
+# Warning: Enabling this feature will consume a lot of credits. (By default it is disabled, and uses ~ 200 tokens)
+wiki_gen_long = False
+
 
 # ------------------- Helper Functions ------------------- #
 # Function that takes the name of a variable, and changes the variable at the line that starts with the variable name in

@@ -16,8 +16,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Function to generate response, takes a library 'msg' and calls the OpenAI API to generate a response. Returns a
 # response as a string.
-def generate(msg, return_type=''):
-
+def generate(msg, return_type='', model='gpt-4'):
     print("Generating response...")
     msglist = []
 
@@ -25,7 +24,6 @@ def generate(msg, return_type=''):
     if type(msg) == list:
         print("Type is list")
         msglist = msg
-
     else:
         print("Type is string")
         print("Generating response...")
@@ -33,9 +31,10 @@ def generate(msg, return_type=''):
 
     # Create a new completion using the OpenAI API
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model=model,
         messages=msglist,
     )
+
     print(response)
     if return_type.lower() == 'list':
         return response

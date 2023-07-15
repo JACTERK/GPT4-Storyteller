@@ -4,6 +4,7 @@ import ast
 from aiLib import *
 import pickle
 import settings
+import wikipediaapi
 
 character_details = "[NAME(String), PERSONALITY(string)]"
 character_gen_prompt = (
@@ -18,15 +19,19 @@ character_gen_prompt = (
 )
 
 
-# explanation,
+# Function that takes 3 paramters, a name, a description, and a manual mode boolean. If manual mode is true, then
+# the user will be prompted to manually input a character. If manual mode is false, then the user will be prompted
+# to input a name and a description, and the program will generate a character based on the input.
 
-
-# Function that takes an integer 'num', and an optional string 'desc' and returns a list of 'num' character.
-# If 'desc' is not provided, it will default to creating 'num' random character of type 'race'.
-# If 'num' is not provided, the function will default to creating and returning a single character object.
+#
 def new(name="", desc="", manual_mode=False):
     print("Creating character...")
     temp_prompt = character_gen_prompt
+
+    # If the name has more than 5 words, assume that the user has provided a description instead of a name
+    if len(name.split(" ")) >= 5:
+        desc = name
+        name = ""
 
     # Automatic generation mode
     if not manual_mode:
@@ -37,9 +42,16 @@ def new(name="", desc="", manual_mode=False):
 
         # If a name is provided, but no description, generate a character with the provided name and a random
         elif desc == "" and name != "":
-            print("Creating a character with the name " + name + "...")
-            temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
-                            "have a randomly generated personality. ")
+            p = generate_character_from_wikipedia(name)
+            if p is not None:
+                print("Creating a character with the name " + name + " and a wikipedia based personality... ")
+                temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
+                                "have a personality based on " + p + ". ")
+
+            else:
+                print("Creating a character with the name " + name + "...")
+                temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
+                                "have a randomly generated personality. ")
 
         # If a description is provided, but no name, generate a character with the provided description and a random
         elif desc != "" and name == "":
@@ -65,6 +77,25 @@ def new(name="", desc="", manual_mode=False):
         print(x)
 
     return Character(x[0], x[1])
+
+
+def generate_character_from_wikipedia(name=""):
+    wiki = wikipediaapi.Wikipedia('character_bot', 'en')
+    page = wiki.page(name)
+
+    if page.exists():
+        t = (page.text.replace('\n', ' '))
+
+        # Returns the entire wikipedia page
+        if settings.wiki_gen_long:
+            return t
+        # Returns the first 2000 characters of the wikipedia page
+        else:
+            return t[0:2000]
+    else:
+        print("Character not found")
+        return None
+
 
 
 class Character:
