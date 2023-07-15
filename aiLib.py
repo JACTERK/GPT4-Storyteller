@@ -16,9 +16,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Function to generate response, takes a library 'msg' and calls the OpenAI API to generate a response. Returns a
 # response as a string.
-def generate(msg, msg2=None):
-    if msg2 is None:
-        msg2 = [{}]
+def generate(msg, return_type=''):
 
     print("Generating response...")
     msglist = []
@@ -39,7 +37,13 @@ def generate(msg, msg2=None):
         messages=msglist,
     )
     print(response)
-    return response["choices"][0]['message']['content']
+    if return_type.lower() == 'list':
+        return response
+    elif return_type.lower() == 'string':
+        return response["choices"][0]['message']['content']
+    else:
+        print("Error: Invalid return type (Valid types: list, string). Returning string...")
+        return response["choices"][0]['message']['content']
 
 
 # Function to generate an image from a prompt

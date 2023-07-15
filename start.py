@@ -23,7 +23,6 @@ discord_client = discord.Client(intents=intents)
 queue_user = [""]
 queue_bot = [""]
 
-
 # TODO: Pass message into chatgpt and use the fucntion generator to call the discord api
 '''
 So the idea is basically, you should be able to create new bots inside of discord, allow the user to base it off a real 
@@ -31,6 +30,7 @@ person (who's data will be gathered from wikipedia) and the bot will respond to 
 would. each bot running in the script will be appended by its name in square brackets, and will respond to the specific 
 user who was talking to it. 
 '''
+
 
 # Message indicating if the bot is connected to Discord servers
 @discord_client.event
@@ -128,4 +128,3 @@ print("Starting bot...")
 
 # Run discord bot instance
 discord_client.run(DISCORD_TOKEN)
-

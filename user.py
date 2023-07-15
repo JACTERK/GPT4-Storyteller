@@ -23,6 +23,8 @@ class User:
         self.discord_id = discord_id
         self.chat_log = []
 
+    # ---------------------------------------------
+
     # Getters and Setters
 
     def get_name(self):
@@ -34,6 +36,8 @@ class User:
     def get_chat_log(self):
         return self.chat_log
 
+    # ---------------------------------------------
+
     def set_name(self, name):
         self.name = name
 
@@ -43,7 +47,9 @@ class User:
     def set_chat_log(self, conversation):
         self.chat_log = conversation
 
-    # Key is a character, value is a chat call ({'role': 'system', 'content': 'string'})
+    # ---------------------------------------------
+
+    # Value is a chat call ({'role': 'system', 'content': 'string'})
     def append_chat_log(self, value):
         self.chat_log.append(value)
 
