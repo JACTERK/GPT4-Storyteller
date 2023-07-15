@@ -2,7 +2,7 @@
 
 import os
 import discord
-import aiLib
+from aiLib import *
 import settings
 import time
 import asyncio
@@ -24,6 +24,14 @@ queue_user = [""]
 queue_bot = [""]
 
 
+# TODO: Pass message into chatgpt and use the fucntion generator to call the discord api
+'''
+So the idea is basically, you should be able to create new bots inside of discord, allow the user to base it off a real 
+person (who's data will be gathered from wikipedia) and the bot will respond to messages in the same way that the person
+would. each bot running in the script will be appended by its name in square brackets, and will respond to the specific 
+user who was talking to it. 
+'''
+
 # Message indicating if the bot is connected to Discord servers
 @discord_client.event
 async def on_ready():
@@ -34,6 +42,7 @@ async def on_ready():
     )
 
 
+'''
 # Message event
 @discord_client.event
 async def on_message(message):
@@ -59,7 +68,7 @@ async def on_message(message):
         imageDict = {"pass": False, "prompt": message.content.split("imagine")[1], "url": ""}
 
         # Send to OpenAI
-        imageDict = aiLib.generate_Image(imageDict)
+        imageDict = aiLib.generate_image(imageDict)
 
         if imageDict["pass"]:
             await message.channel.send("Ok, here is your picture.")
@@ -73,18 +82,18 @@ async def on_message(message):
         msg = message.content
 
         # Enqueue new user message
-        aiLib.enqueue(queue_user, msg)
+        enqueue(queue_user, msg)
 
         print("Generating new message")
 
         # Determine Response requires a completed prompt to be passed into it to work properly. This builds the
         # prompt then passes it into the function.
-        resp = aiLib.determine_Response(aiLib.promptBuilder(queue_user, queue_bot))
+        resp = generate_message(promptBuilder(queue_user, queue_bot))
 
         print("Done!")
 
         # Enqueue new bot response
-        aiLib.enqueue(queue_bot, resp["choices"][0]["message"]["content"])
+        enqueue(queue_bot, resp["choices"][0]["message"]["content"])
 
         # Checks to see if the message has any text, and if it does, it will send it to the server after waiting a
         # specified amount of time.
@@ -96,7 +105,7 @@ async def on_message(message):
             print("Sending message to channel...")
 
             async with message.channel.typing():
-                await asyncio.sleep(aiLib.generate_typetime(resp))
+                await asyncio.sleep(generate_typetime(resp))
 
             await message.channel.send(resp["choices"][0]["message"]["content"] + " ")
 
@@ -107,8 +116,16 @@ async def on_message(message):
             await message.channel.send(settings.default_response)
 
         return
+'''
+
+
+@discord_client.event
+async def on_message(message):
+    return
+
 
 print("Starting bot...")
 
 # Run discord bot instance
 discord_client.run(DISCORD_TOKEN)
+

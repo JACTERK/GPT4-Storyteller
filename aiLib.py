@@ -14,17 +14,32 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-# Function to generate response
-def generate_message(prompt):
-    # Debug
-    if settings.debug_mode:
-        print(prompt)
+# Function to generate response, takes a library 'msg' and calls the OpenAI API to generate a response. Returns a
+# response as a string.
+def generate(msg, msg2=None):
+    if msg2 is None:
+        msg2 = [{}]
 
-    # Generate Response using Chat API
-    response = openai.ChatCompletion.create(model=settings.model_gen, messages=prompt)
+    print("Generating response...")
+    msglist = []
 
-    # Return response
-    return response
+    # Checks if the type of 'msg' is a list or a string
+    if type(msg) == list:
+        print("Type is list")
+        msglist = msg
+
+    else:
+        print("Type is string")
+        print("Generating response...")
+        msglist = [{"role": "system", "content": str(msg)}]
+
+    # Create a new completion using the OpenAI API
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=msglist,
+    )
+    print(response)
+    return response["choices"][0]['message']['content']
 
 
 # Function to generate an image from a prompt
@@ -60,7 +75,7 @@ def enqueue(q_q, message):
 
 # Takes two lists q_h (user) and q_b (bot) and generates the prompt to be passed onto API
 def promptBuilder(q_u, q_b):
-    # Prompt builder for GPT 3
+    # Prompt builder for GPT 3 (Deprecated)
     if settings.model_gen == "davinci":
         print("GPT 3 (Davinci) being used.")
 

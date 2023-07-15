@@ -56,8 +56,24 @@ generate_images = False
 
 debug_mode = True
 
+character_details = "[NAME(String), PERSONALITY(string)]"
+character_generation_prompt = (
+        "You are tasked to make up a character in a real life style game." +
+        "Output your response as a python list, with the list laid out like: " + str(character_details) + "An " +
+        "example of a character that you could create is: ['John', 'John is a farmer who lives in Centretown. " +
+        "He loves nature, and frequently likes going on walks through nature. He is kind and responds to other " +
+        "characters in a kind and relaxed tone.']. " +
+        "As additional context, NAME is the name of the character, PERSONALITY is a description of the character, " +
+        "and can be anything, as long as it details at least 100 words about the character's personality. " +
+        "Additionally, DO NOT USE APOSTROPHES IN YOUR RESPONSE. "
+)
+
 
 # ------------------- Helper Functions ------------------- #
+def get_character_gen_prompt():
+    return character_generation_prompt
+
+
 # Function that takes the name of a variable, and changes the variable at the line that starts with the variable name in
 # settings.py to the value of the variable 'value'
 def update_variable(variable, value):

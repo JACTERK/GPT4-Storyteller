@@ -9,57 +9,27 @@ import settings
 # Function that takes an integer 'num', and an optional string 'desc' and returns a list of 'num' character.
 # If 'desc' is not provided, it will default to creating 'num' random character of type 'race'.
 # If 'num' is not provided, the function will default to creating and returning a single character object.
-def new(desc=""):
-    print("Creating character...")
+def new(name, discord_id):
+    print("Creating user...")
 
-    # If no description is provided, generate a random character
-    if desc == "":
-        x = ast.literal_eval(
-            aiLib.generate([{"role": "system", "content": settings.get_character_gen_prompt()}]))
-
-    # If a description is provided, generate a character based on the description
-    else:
-        x = ast.literal_eval(
-            aiLib.generate([{"role": "system", "content": desc}]))
-
-    print(x)
-
-    return Character(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7])
+    return User(name, discord_id)
 
 
-class Character:
+class User:
     # Constructor
 
-    def __init__(self, discord_id, name):
-        self.discord_id = discord_id
+    def __init__(self, name, discord_id):
         self.name = name
-        self.chat_log = {}
+        self.discord_id = discord_id
+        self.chat_log = []
 
     # Getters and Setters
 
     def get_name(self):
         return self.name
 
-    def get_role(self):
-        return self.role
-
-    def get_personality(self):
-        return self.personality
-
-    def get_health(self):
-        return self.health
-
-    def get_attack(self):
-        return self.attack
-
-    def get_defense(self):
-        return self.defense
-
-    def get_inventory(self):
-        return self.inventory
-
-    def get_location(self):
-        return self.location
+    def get_discord_id(self):
+        return self.discord_id
 
     def get_chat_log(self):
         return self.chat_log
@@ -67,33 +37,15 @@ class Character:
     def set_name(self, name):
         self.name = name
 
-    def set_role(self, role):
-        self.role = role
-
-    def set_personality(self, personality):
-        self.personality = personality
-
-    def set_health(self, health):
-        self.health = health
-
-    def set_attack(self, attack):
-        self.attack = attack
-
-    def set_defense(self, defense):
-        self.defense = defense
-
-    def set_inventory(self, inventory):
-        self.inventory = inventory
-
-    def set_location(self, location):
-        self.location = location
+    def set_discord_id(self, discord_id):
+        self.discord_id = discord_id
 
     def set_chat_log(self, conversation):
         self.chat_log = conversation
 
     # Key is a character, value is a chat call ({'role': 'system', 'content': 'string'})
-    def add_to_chat_log(self, key, value):
-        self.chat_log[key].append(value)
+    def append_chat_log(self, value):
+        self.chat_log.append(value)
 
     # String representation of the object
     def __str__(self):
