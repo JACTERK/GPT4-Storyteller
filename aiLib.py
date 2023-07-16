@@ -17,16 +17,19 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Function to generate response, takes a library 'msg' and calls the OpenAI API to generate a response. Returns a
 # response as a string.
 def generate(msg, return_type='', model='gpt-4'):
-    print("Generating response...")
+    if settings.debug:
+        print("Generating response...")
     msglist = []
 
     # Checks if the type of 'msg' is a list or a string
     if type(msg) == list:
-        print("Type is list")
+        if settings.debug:
+            print("Type is list")
         msglist = msg
     else:
-        print("Type is string")
-        print("Generating response...")
+        if settings.debug:
+            print("Type is string")
+            print("Generating response...")
         msglist = [{"role": "system", "content": str(msg)}]
 
     # Create a new completion using the OpenAI API
@@ -35,7 +38,9 @@ def generate(msg, return_type='', model='gpt-4'):
         messages=msglist,
     )
 
-    print(response)
+    if settings.debug:
+        print(response)
+
     if return_type.lower() == 'list':
         return response
     elif return_type.lower() == 'string':
@@ -53,7 +58,8 @@ def generate_image(imagedict):
 
         imagedict["url"] = url["data"][0]["url"]
 
-        print("Image generated: " + url)
+        if settings.debug:
+            print("Image generated: " + url)
 
         imagedict["pass"] = True
 

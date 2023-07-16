@@ -4,33 +4,40 @@ import ast
 import aiLib
 import pickle
 import settings
+from collections import deque
+import discord
 
 
-# Function that takes an integer 'num', and an optional string 'desc' and returns a list of 'num' character.
-# If 'desc' is not provided, it will default to creating 'num' random character of type 'race'.
-# If 'num' is not provided, the function will default to creating and returning a single character object.
-def new(name, discord_id, message=None):
+# Function that takes a string 'name', a discord object 'client' (which can also be a string containing the id of the
+# discord user), and an optional string 'message' and returns a user object.
+def new(name, client, message=None):
     print("Creating user...")
 
-    if message is not None:
-        return User(name, discord_id, message)
-    else:
-        return User(name, discord_id)
+    # Verify the client is a discord client object
+    if client is discord.Client:
+
+        # If a message is provided, add it to the chat log
+        if message is not None:
+            return User(name, client, message)
+
+        # If no message is provided, create a User object with an empty chat log
+        return User(name, client)
+
+    exit("Error: client " + client + " is not a discord client object.")
 
 
 class User:
     # Constructor
-
-    def __init__(self, name, discord_id, message=None):
+    def __init__(self, name, user_client, message=None):
         self.name = name
-        self.discord_id = discord_id
+        self.user_client = user_client
         if message is None:
-            self.chat_log = []
+            self.chat_log = deque([])
         else:
             if type(message) is str:
-                self.chat_log = [{"role": "system", "content": message}]
+                self.chat_log = deque([{"role": "system", "content": message}])
             else:
-                self.chat_log = [message]
+                self.chat_log = deque([message])
 
     # ---------------------------------------------
 
