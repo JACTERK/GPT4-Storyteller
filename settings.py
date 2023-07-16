@@ -8,6 +8,7 @@ setup = True
 # --------- Name that will trigger bot in discord -------- #
 
 trigger_name = "john"
+character_name = "John"
 
 # --- Character reference for bot to function properly --- #
 

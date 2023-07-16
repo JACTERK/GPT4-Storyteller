@@ -1,6 +1,8 @@
 # Class defining a character in the game
 
 import ast
+
+import aiLib
 from aiLib import *
 import pickle
 import settings
@@ -21,6 +23,7 @@ character_gen_prompt = (
         "detailing how the character speaks to others. Additionally, DO NOT USE APOSTROPHES IN YOUR RESPONSE. "
 )
 
+# TODO: Add autosaving function (idk save like every 5 minutes or something)
 
 # Function that takes 3 paramters, a name, a description, and a manual mode boolean. If manual mode is true, then
 # the user will be prompted to manually input a character. If manual mode is false, then the user will be prompted
@@ -35,20 +38,30 @@ def new(name="", desc="", manual_mode=False):
         desc = name
         name = ""
 
-    # Automatic generation mode
+    # Automatic generation mode (Third parameter is False)
     if not manual_mode:
         # If no name or description is provided, generate a random character
+        # Name: NO
+        # Description: NO
         if desc == "" and name == "":
-            print("Creating a random character...")
-            temp_prompt += "The character will be randomly generated with a random personality and a random name. "
+            name = generate("Output the name of a random famous person. The output "
+                                                              "should only be the name of the person. An example of a "
+                                                              "valid response is: 'John Smith'.")
+            if desc is not None:
+                desc = get_description_from_wikipedia(name)
+                print("Creating a random character...")
+                temp_prompt += "The character will begenerated with the name " + name + \
+                               " and have a personality based on the following decription: " + desc
 
         # If a name is provided, but no description, generate a character with the provided name and a random
+        # Name: YES
+        # Description: NO
         elif desc == "" and name != "":
-            p = generate_character_from_wikipedia(name)
-            if p is not None:
+            desc = get_description_from_wikipedia(name)
+            if desc is not None:
                 print("Creating a character with the name " + name + " and a wikipedia based personality... ")
                 temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
-                                "have a personality based on " + p + ". ")
+                                "have a personality based on the following description: " + desc)
 
             else:
                 print("Creating a character with the name " + name + "...")
@@ -56,12 +69,16 @@ def new(name="", desc="", manual_mode=False):
                                 "have a randomly generated personality. ")
 
         # If a description is provided, but no name, generate a character with the provided description and a random
+        # Name: NO
+        # Description: YES
         elif desc != "" and name == "":
             print("Creating a character with a " + desc + " personality...")
             temp_prompt += ("The character will be generated with a random name. The character will have a " +
                             "personality based on " + desc + ". ")
 
         # If both a name and a description is provided, generate a character with the provided name and description
+        # Name: YES
+        # Description: YES
         else:
             print("Creating a character with the name " + name + " and a " + desc + " personality...")
             temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
@@ -75,16 +92,21 @@ def new(name="", desc="", manual_mode=False):
 
         return Character(x[0], x[1])
 
-    # Manual generation mode
+    # Manual generation mode (Third parameter is True)
     else:
         print("Creating a character with manual input...")
         return Character(name, desc)
 
 
-def generate_character_from_wikipedia(name=""):
+# Function that gets a description of a person or character from wikipedia and return it as a string.
+def get_description_from_wikipedia(name=""):
+    # Wikipedia object with a custom user agent
     wiki = wikipediaapi.Wikipedia('character_bot', 'en')
+
+    # Try to get the wikipedia page of the character
     page = wiki.page(name)
 
+    # If the page exists, get the text from the page
     if page.exists():
         t = (page.text.replace('\n', ' '))
 
@@ -101,11 +123,23 @@ def generate_character_from_wikipedia(name=""):
 
 # Takes a character object 'c' and loads the data from the save file
 def load(c):
+    name = ""
+
+    # Verify if 'c' is a Character object or a string. Sets the name variable accordingly.
+    if type(c) is Character:
+        name = c.get_name().replace(" ", "_")
+    elif type(c) is str:
+        name = c.replace(" ", "_")
+    else:
+        raise TypeError("Invalid type for attribute (Must be Character or String)")
+
+    # Try to load the character from the save file
     try:
-        with open("save/character/" + c.get_name() + ".character", "rb") as f:
+        with open("save/character/" + name + ".character", "rb") as f:
             return pickle.load(f)
-    except Exception as ex:
-        print("Error during unpickling object (Possibly unsupported):", ex)
+    except Exception as e:
+        print("Error loading character: " + str(e))
+        exit(0)
 
 
 class Character:
@@ -114,8 +148,8 @@ class Character:
     def __init__(self, name, personality):
         self.name = name
         self.personality = personality
-        self.chat_log = \
-            deque([{'role': 'system', 'content': "Respond to questions in the following manner: " + personality}])
+        self.chat_log = deque([{'role': 'system', 'content':
+                                "Respond to questions based on the following description: " + personality}])
 
     # ---------------------------------------------
 
@@ -151,7 +185,7 @@ class Character:
         elif type(value) == str:
             self.chat_log.append({'role': 'system', 'content': value})
         else:
-            print("Invalid chat log value type. Type must be a string or a dictionary.")
+            raise TypeError("Invalid chat log value type. Type must be string or dictionary.")
 
     # ---------------------------------------------
 
@@ -167,6 +201,9 @@ class Character:
     def talk_to(self, c):
         n = 0
         # Check to see if 'c' is a character or a user
+        if self == c:
+            raise AttributeError("Cannot talk to self.")
+
         if type(c) == Character:
             if settings.debug:
                 print("Talking to character...")
@@ -177,7 +214,7 @@ class Character:
 
         # If 'c' is neither a character nor a user, exit the program
         else:
-            raise ("Invalid type. Type must be a character or a user.")
+            raise TypeError("Invalid type. Type must be a character or a user.")
 
         # Check to see which chat log is longer
 
@@ -192,9 +229,9 @@ class Character:
         return n
 
     def save(self):
-        pickle.dump(self, open("save/character/" + self.name + ".character", "wb"))
+        pickle.dump(self, open("save/character/" + self.name.replace(" ", "_") + ".character", "wb"))
         if settings.debug:
-            print("Saved character to file: " + self.name + ".character")
+            print("Saved character to file: " + self.name.replace(" ", "_") + ".character")
 
 
 '''
