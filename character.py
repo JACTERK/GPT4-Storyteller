@@ -99,6 +99,15 @@ def generate_character_from_wikipedia(name=""):
         return None
 
 
+# Takes a character object 'c' and loads the data from the save file
+def load(c):
+    try:
+        with open("save/character/" + c.get_name() + ".character", "rb") as f:
+            return pickle.load(f)
+    except Exception as ex:
+        print("Error during unpickling object (Possibly unsupported):", ex)
+
+
 class Character:
     # Constructor
 
@@ -168,7 +177,9 @@ class Character:
 
         # If 'c' is neither a character nor a user, exit the program
         else:
-            exit("Invalid type. Type must be a character or a user.")
+            raise ("Invalid type. Type must be a character or a user.")
+
+        # Check to see which chat log is longer
 
         if len(self.chat_log) >= len(c.chat_log):
             n = len(self.chat_log)
@@ -179,6 +190,11 @@ class Character:
             print()
 
         return n
+
+    def save(self):
+        pickle.dump(self, open("save/character/" + self.name + ".character", "wb"))
+        if settings.debug:
+            print("Saved character to file: " + self.name + ".character")
 
 
 '''
