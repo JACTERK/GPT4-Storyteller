@@ -5,6 +5,9 @@ from aiLib import *
 import pickle
 import settings
 import wikipediaapi
+from user import User
+import userlist
+from collections import deque
 
 character_details = "[NAME(String), PERSONALITY(string)]"
 character_gen_prompt = (
@@ -25,7 +28,6 @@ character_gen_prompt = (
 
 #
 def new(name="", desc="", manual_mode=False):
-    print("Creating character...")
     temp_prompt = character_gen_prompt
 
     # If the name has more than 5 words, assume that the user has provided a description instead of a name
@@ -65,18 +67,18 @@ def new(name="", desc="", manual_mode=False):
             temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
                             "have a personality based on " + desc + ". ")
 
+        # Parse the API output into a list [name, personality]
+        x = ast.literal_eval(generate([{"role": "system", "content": temp_prompt}], 'string'))
+
+        if settings.debug:
+            print(x)
+
+        return Character(x[0], x[1])
+
     # Manual generation mode
     else:
         print("Creating a character with manual input...")
-        temp_prompt += desc
-
-    # Parse the API output into a list [name, personality]
-    x = ast.literal_eval(generate([{"role": "system", "content": temp_prompt}], 'string'))
-
-    if settings.debug:
-        print(x)
-
-    return Character(x[0], x[1])
+        return Character(name, desc)
 
 
 def generate_character_from_wikipedia(name=""):
@@ -97,14 +99,14 @@ def generate_character_from_wikipedia(name=""):
         return None
 
 
-
 class Character:
     # Constructor
 
     def __init__(self, name, personality):
         self.name = name
         self.personality = personality
-        self.chat_log = [{'role': 'system', 'content': "Respond to questions in the following manner: " + personality}]
+        self.chat_log = \
+            deque([{'role': 'system', 'content': "Respond to questions in the following manner: " + personality}])
 
     # ---------------------------------------------
 
@@ -132,15 +134,51 @@ class Character:
 
     # Value is a chat call ({'role': 'system', 'content': 'string'})
     def append_chat_log(self, value):
-        self.chat_log.append(value)
+        if len(self.get_chat_log()) >= settings.q_len:
+            self.chat_log.popleft()
+
+        if type(value) == dict:
+            self.chat_log.append(value)
+        elif type(value) == str:
+            self.chat_log.append({'role': 'system', 'content': value})
+        else:
+            print("Invalid chat log value type. Type must be a string or a dictionary.")
 
     # ---------------------------------------------
 
     # String representation of the object
+    # Print the name, personality, and chat log of the character with deque brackets removed
     def __str__(self):
-        return "Name: " + self.name + ", Personality: " + self.personality
+        return "Name: " + self.name + ", Personality: " + self.personality + "\nFull chat log: " + \
+            str(self.chat_log)[6:len(str(self.chat_log)) - 1]
 
     # TODO: Add a function to make each user that talks to the bot to have their own character object
+
+    # Start a conversation with another character or user
+    def talk_to(self, c):
+        n = 0
+        # Check to see if 'c' is a character or a user
+        if type(c) == Character:
+            if settings.debug:
+                print("Talking to character...")
+
+        elif type(c) == User:
+            if settings.debug:
+                print("Talking to user...")
+
+        # If 'c' is neither a character nor a user, exit the program
+        else:
+            exit("Invalid type. Type must be a character or a user.")
+
+        if len(self.chat_log) >= len(c.chat_log):
+            n = len(self.chat_log)
+        else:
+            n = c.chat_log
+
+        for i in self.chat_log:
+            print()
+
+        return n
 
 
 '''
