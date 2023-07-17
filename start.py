@@ -31,6 +31,8 @@ would. each bot running in the script will be appended by its name in square bra
 user who was talking to it. 
 '''
 
+# TODO: Implement argv to allow user to run startup with the --setup arguement
+
 
 # Message indicating if the bot is connected to Discord servers
 @discord_client.event

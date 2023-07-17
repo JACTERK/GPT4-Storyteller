@@ -23,7 +23,7 @@ def new(name, client, message=None):
         # If no message is provided, create a User object with an empty chat log
         return User(name, client)
 
-    exit("Error: client " + client + " is not a discord client object.")
+    raise("Error: client " + client + " is not a discord client object.")
 
 
 class User:
@@ -31,13 +31,12 @@ class User:
     def __init__(self, name, user_client, message=None):
         self.name = name
         self.user_client = user_client
-        if message is None:
-            self.chat_log = deque([])
+        if type(message) is str:
+            self.chat_log = deque([{"role": "system", "content": message}])
+        elif type(message) is dict:
+            self.chat_log = deque([message])
         else:
-            if type(message) is str:
-                self.chat_log = deque([{"role": "system", "content": message}])
-            else:
-                self.chat_log = deque([message])
+            self.chat_log = deque([])
 
     # ---------------------------------------------
 

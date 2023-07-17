@@ -7,6 +7,7 @@ import settings
 
 
 # TODO: Add a function to make all users in a discord server each their own user object
+# TODO: Change user storage to a chain map.
 
 class Userlist:
     def __init__(self):
