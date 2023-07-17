@@ -1,5 +1,28 @@
 # Class defining a character in the game
 
+# Function Descriptions:
+# new(name, desc, manual_mode) - Function that takes 3 paramters, a name, a description, and a manual mode boolean. If
+# manual mode is true, then the user will be prompted to manually input a character. If manual mode is false, then the
+# user will be prompted to input a name and a description, and the program will generate a character based on the input.
+
+# get_description_from_wikipedia(name) - Function that takes a string 'name' and returns a string containing the
+# description of the wikipedia page of the character with the name 'name'. Returns None if the wikipedia page does not
+# exist.
+
+# load(character(string)) - Function that takes a string 'character' and returns a character object of the same name.
+# Returns None if the character does not exist.
+
+# combine_chat_log(c1, c2) - Function that takes two character objects 'c1' and 'c2' and returns a deque containing
+# the chat logs of both characters combined and sorted.
+
+# -- Inside Class Character --
+
+# talk_to(self, c) - Function that takes a character object 'c' and returns a string containing the response of the
+# character to the character 'c'.
+
+# save(self) - Function that saves the character object to a file. The file name is the name of the character with
+# spaces replaced with '_'.
+
 import ast
 
 import aiLib
@@ -23,6 +46,7 @@ character_gen_prompt = (
         "detailing how the character speaks to others. Additionally, DO NOT USE APOSTROPHES IN YOUR RESPONSE. "
 )
 
+
 # TODO: Add autosaving function (idk save like every 5 minutes or something)
 
 # Function that takes 3 paramters, a name, a description, and a manual mode boolean. If manual mode is true, then
@@ -45,8 +69,8 @@ def new(name="", desc="", manual_mode=False):
         # Description: NO
         if desc == "" and name == "":
             name = generate("Output the name of a random famous person. The output "
-                                                              "should only be the name of the person. An example of a "
-                                                              "valid response is: 'John Smith'.")
+                            "should only be the name of the person. An example of a "
+                            "valid response is: 'John Smith'.")
             if desc is not None:
                 desc = get_description_from_wikipedia(name)
                 print("Creating a random character...")
@@ -142,14 +166,38 @@ def load(c):
         exit(0)
 
 
+# Takes two character objects 's' and 'c' and combines their chat logs into a single chat log.
+# The number of loops is based on the length of the first passed in character's chat log. Empty chat log idx's are
+# filled with empty chat log entries. Returns a deque of chat log entries.
+def combine_chat_log(s, c, return_type=deque):
+    combined_chat_log = deque([])
+
+    for i in range(len(s.get_chat_log())):
+        # Append 'self' chat at index 'i' to combined_chat_log
+        try:
+            combined_chat_log.append(s.get_chat_log()[i])
+        except IndexError:
+            combined_chat_log.append({"role": "system", "content": ""})
+
+        # Append 'c' chat at index 'i' to combined_chat_log
+        try:
+            combined_chat_log.append(c.get_chat_log()[i])
+        except IndexError:
+            combined_chat_log.append({"role": "system", "content": ""})
+
+    if return_type == deque or return_type == str or return_type == list:
+        return return_type(combined_chat_log)
+    else:
+        raise TypeError("Invalid return type (Must be deque or str)")
+
+
 class Character:
     # Constructor
 
     def __init__(self, name, personality):
         self.name = name
         self.personality = personality
-        self.chat_log = deque([{'role': 'system', 'content':
-                                "Respond to questions based on the following description: " + personality}])
+        self.chat_log = deque([])
 
     # ---------------------------------------------
 
@@ -207,6 +255,13 @@ class Character:
         if type(c) == Character:
             if settings.debug:
                 print("Talking to character...")
+            # Combine the chat logs of the two characters
+            temp_chat = combine_chat_log(self, c)
+
+
+
+
+
 
         elif type(c) == User:
             if settings.debug:
@@ -232,21 +287,3 @@ class Character:
         pickle.dump(self, open("save/character/" + self.name.replace(" ", "_") + ".character", "wb"))
         if settings.debug:
             print("Saved character to file: " + self.name.replace(" ", "_") + ".character")
-
-
-'''
-    # Start a conversation with another character
-    def talk_to(self, c):
-        print("conv start with : " + c.get_name())
-        temp_msg = ""
-
-        # Checks to see if the conversation has already been started, if not append the personality of both characters
-        if len(self.chat_log[c]) == 0:
-            self.add_to_chat_log(c, {'role': 'system', 'content': self.get_personality()})
-            c.add_to_chat_log(self, {'role': 'system', 'content': c.get_personality()})
-
-        # If it has, call the OpenAI API to generate a response
-        else:
-            # temp_msg is a string
-            temp_msg = aiLib.generate(self.chat_log[c])
-'''

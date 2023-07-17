@@ -53,18 +53,53 @@ def t5():
     t.append_chat_log({"role": "user", "content": "what is your name, and what do you do?"})
     u.append_chat_log({"role": "system", "content": "You are a farmer named john."})
 
-    time.sleep(1)
+    t.append_chat_log({"role": "user", "content": "what is your time?"})
 
     # print(t)
 
     # v = t.talk_to(t)
     # print(v)
 
-    t.save()
+    # t.save()
 
-    z = character.load("Keanu_Reeves")
+    # z = character.load("Keanu_Reeves")
 
-    print(z.get_name())
+    # print(z.get_name())
+
+    x = character.combine_chat_log(t, u)
+
+    print(t.get_chat_log()[0]["content"])
+
+    s = [{"role": "system", "content": "hello"}, {"role": "user", "content": "hello2"}]
+
+    d = deque[{"role": "system", "content": "hello3"}]
+
+    print(list(d) + s)
 
 
-t5()
+def t6():
+    print("t6")
+    t = character.new("Keanu Reeves", "Keanu reeves is a farmer", True)
+    u = character.new("John", "John is a farmer", True)
+
+    t.append_chat_log({"role": "user", "content": "what is your name, and what do you do?"})
+    u.append_chat_log({"role": "user", "content": "You are a farmer named john."})
+
+    # Test function
+
+    p1 = ("You are tasked in coming up with a response that you think " + t.get_name() +
+          " would say. For reference, the character is described in the following way: " + t.get_personality() +
+          ". You can use that description to assist in responding like the character accurately. " +
+          "What would you say as a response to the following conversation with " + u.get_name() + "? For reference, " +
+          u.get_name() + " is described in the following way: " + u.get_personality() + ".")
+
+    temp_prompt = [{"role": "system", "content": p1}]
+
+    temp_prompt += (character.combine_chat_log(t, u))
+
+    print(temp_prompt)
+
+    print(aiLib.generate(temp_prompt, str))
+
+
+t6()

@@ -22,17 +22,20 @@ def generate(msg, return_type='', model='gpt-4'):
     msglist = []
 
     # Checks if the type of 'msg' is a list or a string
+    # In this case, the input is assumed to be a conversation.
     if type(msg) == list:
         if settings.debug:
             print("Type is list")
         msglist = msg
+
+    # In this case, the input is assumed to be a single message.
     else:
         if settings.debug:
             print("Type is string")
             print("Generating response...")
         msglist = [{"role": "system", "content": str(msg)}]
 
-    # Create a new completion using the OpenAI API
+    # Create a new chatcompletion using the OpenAI API
     response = openai.ChatCompletion.create(
         model=model,
         messages=msglist,
@@ -41,6 +44,7 @@ def generate(msg, return_type='', model='gpt-4'):
     if settings.debug:
         print(response)
 
+    # Determine how the response should be returned (Either as a list or a string. By default, is returned as a string)
     if return_type.lower() == 'list':
         return response
     elif return_type.lower() == 'string':
@@ -50,6 +54,7 @@ def generate(msg, return_type='', model='gpt-4'):
         return response["choices"][0]['message']['content']
 
 
+# TODO: Implement this feature in the future
 # Function to generate an image from a prompt
 def generate_image(imagedict):
     # Generate image
@@ -70,6 +75,7 @@ def generate_image(imagedict):
     return imagedict
 
 
+# TODO: Remove
 # Takes a list q_q and a string message, and adds the new message to the beginning of the queue.
 def enqueue(q_q, message):
     # If q_q length is greater than or equal to the value configured in settings, pop the first index.
@@ -82,6 +88,7 @@ def enqueue(q_q, message):
     return q_q
 
 
+# TODO: Remove - Function is replaced by talk_to() in character.py
 # Takes two lists q_h (user) and q_b (bot) and generates the prompt to be passed onto API
 def promptBuilder(q_u, q_b):
     # Prompt builder for GPT 3 (Deprecated)
