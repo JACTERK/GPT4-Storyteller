@@ -37,14 +37,18 @@ from collections import deque
 character_details = "[NAME(String), PERSONALITY(string)]"
 character_gen_prompt = (
         "You are tasked to make up a character in a real life style game." +
-        "Output your response as a python list, with the list laid out like: " + str(character_details) + "An " +
+        "Output your response as a python list, with the list laid out like: " + str(character_details) + ". An " +
         "example of a character that you could create is: ['John', 'John is a farmer who lives in Centretown. " +
         "He loves nature, and frequently likes going on walks through nature. He is kind and responds to other " +
         "characters in a kind and relaxed tone.']. " +
         "As additional context, NAME is the name of the character, PERSONALITY is a description of the character, " +
-        "and can be anything, as long as it details at least 100 words about the character's personality, as well as " +
-        "detailing how the character speaks to others. Additionally, DO NOT USE APOSTROPHES IN YOUR RESPONSE. "
-)
+        "and can be anything, as well as " +
+        "detailing how the character speaks to others. This is important, as the character will be responding to " +
+        "other characters in the game, and the personality will be used to determine how the character responds to " +
+        "other characters. The output will be passed into a python eval() function, so make sure that the output is " +
+        "a valid python list. Make sure that you only use single quotes in your response, as double quotes will " +
+        "cause an error. Make sure you keep the PERSONALITY string to around " + str(settings.desc_gen_len) +
+        " charaters.")
 
 
 # TODO: Add autosaving function (idk save like every 5 minutes or something)
@@ -53,9 +57,15 @@ character_gen_prompt = (
 # the user will be prompted to manually input a character. If manual mode is false, then the user will be prompted
 # to input a name and a description, and the program will generate a character based on the input.
 
-#
-def new(name="", desc="", manual_mode=False):
+# TODO: Change name and desc defaults to None, and change the rest of the code to match. Also swap name and desc in
+# each of the if statements
+def new(name="", desc="", manual_mode=False, regen=False):
     temp_prompt = character_gen_prompt
+
+    # Checks if a save file exists for the character
+    if name != "" and (os.path.isfile("save/character/" + name.replace(" ", "_").lower() + ".character")) and not regen:
+        print("Loading character from save file...")
+        return load(name)
 
     # If the name has more than 5 words, assume that the user has provided a description instead of a name
     if len(name.split(" ")) >= 5:
@@ -71,8 +81,9 @@ def new(name="", desc="", manual_mode=False):
             name = generate("Output the name of a random famous person. The output "
                             "should only be the name of the person. An example of a "
                             "valid response is: 'John Smith'.")
+            desc = get_description_from_wikipedia(name)
+
             if desc is not None:
-                desc = get_description_from_wikipedia(name)
                 print("Creating a random character...")
                 temp_prompt += "The character will begenerated with the name " + name + \
                                " and have a personality based on the following decription: " + desc
@@ -109,12 +120,12 @@ def new(name="", desc="", manual_mode=False):
                             "have a personality based on " + desc + ". ")
 
         # Parse the API output into a list [name, personality]
-        x = ast.literal_eval(generate([{"role": "system", "content": temp_prompt}], 'string'))
+        parsed_output = ast.literal_eval(generate([{"role": "system", "content": temp_prompt}]))
 
         if settings.debug:
-            print(x)
+            print(parsed_output)
 
-        return Character(x[0], x[1])
+        return Character(parsed_output[0], parsed_output[1])
 
     # Manual generation mode (Third parameter is True)
     else:
@@ -159,7 +170,7 @@ def load(c):
 
     # Try to load the character from the save file
     try:
-        with open("save/character/" + name + ".character", "rb") as f:
+        with open("save/character/" + name.lower() + ".character", "rb") as f:
             return pickle.load(f)
     except Exception as e:
         print("Error loading character: " + str(e))
@@ -173,18 +184,19 @@ def combine_chat_log(s, c, return_type=deque):
     combined_chat_log = deque([])
 
     for i in range(len(s.get_chat_log())):
-        # Append 'self' chat at index 'i' to combined_chat_log
+        # Append 's' chat at index 'i' to combined_chat_log
         try:
             combined_chat_log.append(s.get_chat_log()[i])
         except IndexError:
             combined_chat_log.append({"role": "system", "content": ""})
 
-        # Append 'c' chat at index 'i' to combined_chat_log
+        # Append 's' chat at index 'i' to combined_chat_log
         try:
             combined_chat_log.append(c.get_chat_log()[i])
         except IndexError:
             combined_chat_log.append({"role": "system", "content": ""})
 
+    # Return the combined chat log as a deque by default, or as a string or list if specified
     if return_type == deque or return_type == str or return_type == list:
         return return_type(combined_chat_log)
     else:
@@ -240,14 +252,21 @@ class Character:
     # String representation of the object
     # Print the name, personality, and chat log of the character with deque brackets removed
     def __str__(self):
-        return "Name: " + self.name + ", Personality: " + self.personality + "\nFull chat log: " + \
-            str(self.chat_log)[6:len(str(self.chat_log)) - 1]
+        return "--------\nName: " + self.name + "\n\nPersonality: \n" + self.personality + "\n\nFull chat log: " + \
+            str(self.chat_log)[6:len(str(self.chat_log)) - 1] + "\n"
 
     # TODO: Add a function to make each user that talks to the bot to have their own character object
 
-    # Start a conversation with another character or user
-    def talk_to(self, c):
-        n = 0
+    # Start a conversation with another character or user. msg is a string or chatcompletion dict.
+    def talk_to(self, c, msg):
+
+        # If msg is a string, convert it to a chatcompletion dict
+        if type(msg) == str:
+            msg = {"role": "user", "content": msg}
+        elif type(msg) != dict:
+            raise TypeError("Function talk_to() for " + self.get_name() +
+                            " Error: Invalid message type. Type must be string or dictionary.")
+
         # Check to see if 'c' is a character or a user
         if self == c:
             raise AttributeError("Cannot talk to self.")
@@ -284,6 +303,6 @@ class Character:
         return n
 
     def save(self):
-        pickle.dump(self, open("save/character/" + self.name.replace(" ", "_") + ".character", "wb"))
+        pickle.dump(self, open("save/character/" + (self.name.replace(" ", "_")).lower() + ".character", "wb"))
         if settings.debug:
-            print("Saved character to file: " + self.name.replace(" ", "_") + ".character")
+            print("Saved character to file: " + (self.name.replace(" ", "_")).lower() + ".character")

@@ -6,6 +6,7 @@ import userlist
 import requests
 from collections import deque
 import time
+import os
 
 
 def t1():
@@ -88,8 +89,8 @@ def t6():
     # Test function
 
     p1 = ("You are tasked in coming up with a response that you think " + t.get_name() +
-          " would say. For reference, the character is described in the following way: " + t.get_personality() +
-          ". You can use that description to assist in responding like the character accurately. " +
+          " would say. For reference, " + t.get_name() + " is described in the following way: " + t.get_personality() +
+          ". You can use that description to assist in responding like " + t.get_name() + " accurately. " +
           "What would you say as a response to the following conversation with " + u.get_name() + "? For reference, " +
           u.get_name() + " is described in the following way: " + u.get_personality() + ".")
 
@@ -102,4 +103,20 @@ def t6():
     print(aiLib.generate(temp_prompt, str))
 
 
-t6()
+def t7():
+    print("t7")
+    t = character.new("Keanu Reeves")
+    u = character.new("Post Malone")
+
+    t.append_chat_log({"role": "user", "content": "What music do you like?"})
+    u.append_chat_log({"role": "user", "content": "Okay cool."})
+
+    #t.save()
+    #u.save()
+
+    print(t)
+    print(u)
+
+
+
+t7()

@@ -1,6 +1,7 @@
 # Made with <3 by Jacob Terkuc
 
 import os
+from collections import deque
 import openai
 import settings
 import time
@@ -16,41 +17,43 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Function to generate response, takes a library 'msg' and calls the OpenAI API to generate a response. Returns a
 # response as a string.
-def generate(msg, return_type='', model='gpt-4'):
+def generate(msg, return_type=str, model='gpt-4'):
     if settings.debug:
-        print("Generating response...")
-    msglist = []
+        print("Function generate() called | Return type is : " + str(return_type) + " | Model is: " + model)
+    msglist = [{"role": "system", "content": str(msg)}]
 
     # Checks if the type of 'msg' is a list or a string
     # In this case, the input is assumed to be a conversation.
     if type(msg) == list:
-        if settings.debug:
-            print("Type is list")
         msglist = msg
 
-    # In this case, the input is assumed to be a single message.
-    else:
-        if settings.debug:
-            print("Type is string")
-            print("Generating response...")
-        msglist = [{"role": "system", "content": str(msg)}]
+    if settings.debug:
+        print("Currently using model: " + model)
 
-    # Create a new chatcompletion using the OpenAI API
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=msglist,
-    )
+    # TODO: Hacky way to retry if the API fails. Fix this in the future.
+    try:
+        # Create a new chatcompletion using the OpenAI API
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=msglist
+        )
+    except TypeError as e:
+        # Create a new chatcompletion using the OpenAI API
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=msglist
+        )
 
     if settings.debug:
         print(response)
 
     # Determine how the response should be returned (Either as a list or a string. By default, is returned as a string)
-    if return_type.lower() == 'list':
+    if return_type == list or return_type == deque:
         return response
-    elif return_type.lower() == 'string':
+    elif return_type == str:
         return response["choices"][0]['message']['content']
     else:
-        print("Error: Invalid return type (Valid types: list, string). Returning string...")
+        print("Error: Invalid return type (Valid types: list, deque, string). Returning string...")
         return response["choices"][0]['message']['content']
 
 

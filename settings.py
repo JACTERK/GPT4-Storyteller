@@ -46,6 +46,9 @@ t_speed_multiplier = 2
 model_checker = "gpt-3.5-turbo"
 model_gen = "gpt-4"
 
+# Will cost around $0.03 to generate a single description at 1200 characters.
+desc_gen_len = 1200
+
 # --------------- Image Generation Settings -------------- #
 
 # True: Generate images
