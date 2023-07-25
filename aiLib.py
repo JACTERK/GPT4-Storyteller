@@ -15,6 +15,9 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
+translate_dict = {"'": "", '"': "", "’": ""}
+
+
 # Function to generate response, takes a library 'msg' and calls the OpenAI API to generate a response. Returns a
 # response as a string.
 def generate(msg, return_type=str, model='gpt-4'):
@@ -46,6 +49,9 @@ def generate(msg, return_type=str, model='gpt-4'):
 
     if settings.debug:
         print(response)
+
+    response["choices"][0]['message']['content'] = response["choices"][0]['message']['content']\
+        .translate(translate_dict)
 
     # Determine how the response should be returned (Either as a list or a string. By default, is returned as a string)
     if return_type == list or return_type == deque:
@@ -145,3 +151,29 @@ def log_gen(log_data):
 
 def generate_typetime(message):
     return len(message) / settings.t_speed_multiplier
+
+
+# Takes two character objects 's' (self) and 'c' (character) and combines their chat logs into a single chat log.
+# The number of loops is based on the length of the first passed in character's chat log. Empty chat log idx's are
+# filled with empty chat log entries. Returns a deque of chat log entries.
+def combine_chat_log(s, c, return_type=deque):
+    combined_chat_log = deque([])
+
+    for i in range(len(s.get_chat_log())):
+        # Append 's' chat at index 'i' to combined_chat_log
+        try:
+            combined_chat_log.append(s.get_chat_log()[i])
+        except IndexError:
+            combined_chat_log.append({"role": "system", "content": ""})
+
+        # Append 's' chat at index 'i' to combined_chat_log
+        try:
+            combined_chat_log.append(c.get_chat_log()[i])
+        except IndexError:
+            combined_chat_log.append({"role": "system", "content": ""})
+
+    # Return the combined chat log as a deque by default, or as a string or list if specified
+    if return_type == deque or return_type == str or return_type == list:
+        return return_type(combined_chat_log)
+    else:
+        raise TypeError("Invalid return type (Must be deque or str)")

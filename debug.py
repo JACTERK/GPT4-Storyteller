@@ -3,10 +3,10 @@ import character
 import user
 import settings
 import userlist
-import requests
 from collections import deque
 import time
 import os
+import discord
 
 
 def t1():
@@ -105,18 +105,42 @@ def t6():
 
 def t7():
     print("t7")
-    t = character.new("Keanu Reeves")
-    u = character.new("Post Malone")
+    g = {"role": "user", "content": "hello"}
 
-    t.append_chat_log({"role": "user", "content": "What music do you like?"})
-    u.append_chat_log({"role": "user", "content": "Okay cool."})
-
-    #t.save()
-    #u.save()
-
-    print(t)
-    print(u)
+    print(g["role"])
 
 
+def t8():
+    # Define Discord client
+    intents = discord.Intents.default()
+    intents.message_content = True
 
-t7()
+    discord_client = discord.Client(intents=intents)
+
+    myUser = user.new("Jacob", discord_client)
+    myCharacter = character.new("Post_Malone")
+
+    print(myUser)
+    print(myCharacter)
+
+    n = "Hey!"
+
+    # myUser.append_chat_log({"role": "user", "content": n})
+
+    # Calls talk_to function in character.py - returns a string and updates chatlog
+    print(myUser.talk_to(myCharacter, msg=n))
+
+    print(myCharacter.get_chat_log())
+    print(myUser.get_chat_log())
+
+
+# Make the program loop. make a tui too.
+def t9():
+    print("t9")
+
+
+
+
+
+
+t8()

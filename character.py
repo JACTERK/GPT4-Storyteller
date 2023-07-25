@@ -59,6 +59,7 @@ character_gen_prompt = (
 
 # TODO: Change name and desc defaults to None, and change the rest of the code to match. Also swap name and desc in
 # each of the if statements
+# TODO: Fix the character generation fail bug (handle ' and " in the input)
 def new(name="", desc="", manual_mode=False, regen=False):
     temp_prompt = character_gen_prompt
 
@@ -94,7 +95,7 @@ def new(name="", desc="", manual_mode=False, regen=False):
         elif desc == "" and name != "":
             desc = get_description_from_wikipedia(name)
             if desc is not None:
-                print("Creating a character with the name " + name + " and a wikipedia based personality... ")
+                print("Creating a character with the name " + name + " and a generated personality... ")
                 temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
                                 "have a personality based on the following description: " + desc)
 
@@ -156,10 +157,9 @@ def get_description_from_wikipedia(name=""):
         return None
 
 
+# TODO: Combine load and new functions, they do the same thing.
 # Takes a character object 'c' and loads the data from the save file
 def load(c):
-    name = ""
-
     # Verify if 'c' is a Character object or a string. Sets the name variable accordingly.
     if type(c) is Character:
         name = c.get_name().replace(" ", "_")
@@ -173,41 +173,15 @@ def load(c):
         with open("save/character/" + name.lower() + ".character", "rb") as f:
             return pickle.load(f)
     except Exception as e:
-        print("Error loading character: " + str(e))
+        print("Error loading character object: " + str(e))
         exit(0)
-
-
-# Takes two character objects 's' and 'c' and combines their chat logs into a single chat log.
-# The number of loops is based on the length of the first passed in character's chat log. Empty chat log idx's are
-# filled with empty chat log entries. Returns a deque of chat log entries.
-def combine_chat_log(s, c, return_type=deque):
-    combined_chat_log = deque([])
-
-    for i in range(len(s.get_chat_log())):
-        # Append 's' chat at index 'i' to combined_chat_log
-        try:
-            combined_chat_log.append(s.get_chat_log()[i])
-        except IndexError:
-            combined_chat_log.append({"role": "system", "content": ""})
-
-        # Append 's' chat at index 'i' to combined_chat_log
-        try:
-            combined_chat_log.append(c.get_chat_log()[i])
-        except IndexError:
-            combined_chat_log.append({"role": "system", "content": ""})
-
-    # Return the combined chat log as a deque by default, or as a string or list if specified
-    if return_type == deque or return_type == str or return_type == list:
-        return return_type(combined_chat_log)
-    else:
-        raise TypeError("Invalid return type (Must be deque or str)")
 
 
 class Character:
     # Constructor
 
     def __init__(self, name, personality):
-        self.name = name
+        self.name = name.replace("_", " ")
         self.personality = personality
         self.chat_log = deque([])
 
@@ -235,7 +209,7 @@ class Character:
     def set_chat_log(self, conversation):
         self.chat_log = conversation
 
-    # Value is a chat call ({'role': 'system', 'content': 'string'})
+    # Value is a chat call ({'role': 'system', 'content': 'string'}), string, or a list of chat calls.
     def append_chat_log(self, value):
         if len(self.get_chat_log()) >= settings.q_len:
             self.chat_log.popleft()
@@ -244,6 +218,9 @@ class Character:
             self.chat_log.append(value)
         elif type(value) == str:
             self.chat_log.append({'role': 'system', 'content': value})
+        elif type(value) == list:
+            for i in value:
+                self.chat_log.append(i)
         else:
             raise TypeError("Invalid chat log value type. Type must be string or dictionary.")
 
@@ -252,55 +229,15 @@ class Character:
     # String representation of the object
     # Print the name, personality, and chat log of the character with deque brackets removed
     def __str__(self):
-        return "--------\nName: " + self.name + "\n\nPersonality: \n" + self.personality + "\n\nFull chat log: " + \
-            str(self.chat_log)[6:len(str(self.chat_log)) - 1] + "\n"
+        return "--------\nName: " + self.name + "\n\nPersonality: \n" + self.personality + "\n\nChat Log: " + \
+            str(self.get_chat_log()) + "\n--------\n"
 
     # TODO: Add a function to make each user that talks to the bot to have their own character object
 
-    # Start a conversation with another character or user. msg is a string or chatcompletion dict.
-    def talk_to(self, c, msg):
-
-        # If msg is a string, convert it to a chatcompletion dict
-        if type(msg) == str:
-            msg = {"role": "user", "content": msg}
-        elif type(msg) != dict:
-            raise TypeError("Function talk_to() for " + self.get_name() +
-                            " Error: Invalid message type. Type must be string or dictionary.")
-
-        # Check to see if 'c' is a character or a user
-        if self == c:
-            raise AttributeError("Cannot talk to self.")
-
-        if type(c) == Character:
-            if settings.debug:
-                print("Talking to character...")
-            # Combine the chat logs of the two characters
-            temp_chat = combine_chat_log(self, c)
 
 
 
 
-
-
-        elif type(c) == User:
-            if settings.debug:
-                print("Talking to user...")
-
-        # If 'c' is neither a character nor a user, exit the program
-        else:
-            raise TypeError("Invalid type. Type must be a character or a user.")
-
-        # Check to see which chat log is longer
-
-        if len(self.chat_log) >= len(c.chat_log):
-            n = len(self.chat_log)
-        else:
-            n = c.chat_log
-
-        for i in self.chat_log:
-            print()
-
-        return n
 
     def save(self):
         pickle.dump(self, open("save/character/" + (self.name.replace(" ", "_")).lower() + ".character", "wb"))
