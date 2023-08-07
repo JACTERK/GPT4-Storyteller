@@ -2,26 +2,34 @@
 
 import os
 import discord
+
+import aiLib
 from aiLib import *
 import settings
 import time
 import asyncio
 import random
 from dotenv import load_dotenv
+import character
+import user
+import userlist
 
 # Load Discord API Key
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
-# Define Discord client
+# Define and load Discord client
 intents = discord.Intents.default()
 intents.message_content = True
-
 discord_client = discord.Client(intents=intents)
 
-# Queues used to manage memory
-queue_user = [""]
-queue_bot = [""]
+# Load Character object
+character_object = character.load(settings.trigger_name)
+
+# Load User object TODO: Change name of user object? Possibly have each user have their own object and store in list
+user_object = user.new("User", discord_client)
+
+server_list = []
 
 # TODO: Pass message into chatgpt and use the fucntion generator to call the discord api
 '''
@@ -30,6 +38,7 @@ person (who's data will be gathered from wikipedia) and the bot will respond to 
 would. each bot running in the script will be appended by its name in square brackets, and will respond to the specific 
 user who was talking to it. 
 '''
+
 
 # TODO: Implement argv to allow user to run startup with the --setup arguement
 
@@ -42,6 +51,55 @@ async def on_ready():
         + settings.trigger_name
         + "] to trigger. "
     )
+
+    # TODO: Allow server to save logs of conversations to a file
+    # Get list of servers the bot is connected to
+
+    for g in range(len(discord_client.guilds)):
+        server_list.append(userlist.new(discord_client.guilds[g].id))
+
+    # TODO: Temporarily make each server a user in a userlist. Change to each user being a discord user.
+    for i in range(len(server_list)):
+        server_list[i].add_user(user.new(discord_client.guilds[i].name))
+
+    # Print list of servers the bot is connected to
+    if settings.debug:
+        print('\nConnected Servers:')
+        for g in range(len(discord_client.guilds)):
+            print(f'[{str(g + 1)}] ID: {discord_client.guilds[g].id:20}  --  '
+                  f'Server name: {str(discord_client.guilds[g].name):25} ')
+
+
+# Message Event (Message recieved from Discord API)
+@discord_client.event
+async def on_message(message):
+    print("Message recieved from Discord API")
+
+    # Checkers
+
+    # Don't respond to self or other bots
+    if message.author == discord_client.user or message.author.bot:
+        if settings.debug:
+            print("Message author is self or bot.")
+        return
+
+    if message.content.lower() in settings.trigger_name.lower():
+        if len(message.content.lower()) >= (len(settings.trigger_name.lower()) / 3):
+            print("HAS")
+
+    # TODO: Currently designed to record whole server logs. Change to record individual user logs.
+    else:
+        for i in range(len(server_list)):
+            if message.author.guild.id == server_list[i].server_id:
+                server_list[i].append_chat_log(message.content)
+                print(server_list[i].chat_log)
+
+    # When you get a message, you need to:
+    # 1. check if its a bot or itself
+    # 2. get character_object to make a new message with the chat log from the specific server id
+    # 3. return message
+
+    # message = generate(aiLib.combine_chat_log(), str)
 
 
 '''
@@ -119,14 +177,6 @@ async def on_message(message):
 
         return
 '''
-
-
-@discord_client.event
-async def on_message(message):
-    return
-
-
-print("Starting bot...")
 
 # Run discord bot instance
 discord_client.run(DISCORD_TOKEN)

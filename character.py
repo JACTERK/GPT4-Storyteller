@@ -64,7 +64,8 @@ def new(name="", desc="", manual_mode=False, regen=False):
     temp_prompt = character_gen_prompt
 
     # Checks if a save file exists for the character
-    if name != "" and (os.path.isfile("save/character/" + name.replace(" ", "_").lower() + ".character")) and not regen:
+    if (name != "" and (os.path.isfile("save/character/" + name.replace(" ", "_").lower() + ".character"))
+            and not regen):
         print("Loading character from save file...")
         return load(name)
 
@@ -79,13 +80,12 @@ def new(name="", desc="", manual_mode=False, regen=False):
         # Name: NO
         # Description: NO
         if desc == "" and name == "":
-            name = generate("Output the name of a random famous person. The output "
-                            "should only be the name of the person. An example of a "
-                            "valid response is: 'John Smith'.")
+            print("Creating a random character...")
+
+            name = generate_name()
             desc = get_description_from_wikipedia(name)
 
             if desc is not None:
-                print("Creating a random character...")
                 temp_prompt += "The character will begenerated with the name " + name + \
                                " and have a personality based on the following decription: " + desc
 
@@ -93,23 +93,25 @@ def new(name="", desc="", manual_mode=False, regen=False):
         # Name: YES
         # Description: NO
         elif desc == "" and name != "":
+            print("Creating a character with the name " + name + " and a generated personality... ")
+
             desc = get_description_from_wikipedia(name)
             if desc is not None:
-                print("Creating a character with the name " + name + " and a generated personality... ")
                 temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
                                 "have a personality based on the following description: " + desc)
 
             else:
-                print("Creating a character with the name " + name + "...")
                 temp_prompt += ("The character will be generated with the name " + name + ". The character will " +
                                 "have a randomly generated personality. ")
 
-        # If a description is provided, but no name, generate a character with the provided description and a random
+        # If a description is provided, but no name, generate a character with the provided description and random name
         # Name: NO
         # Description: YES
         elif desc != "" and name == "":
-            print("Creating a character with a " + desc + " personality...")
-            temp_prompt += ("The character will be generated with a random name. The character will have a " +
+            print("Creating a character with a random name and " + desc + " personality...")
+
+            name = generate_name()
+            temp_prompt += ("The character will be generated with the name " + name + ". The character will have a " +
                             "personality based on " + desc + ". ")
 
         # If both a name and a description is provided, generate a character with the provided name and description
@@ -132,6 +134,12 @@ def new(name="", desc="", manual_mode=False, regen=False):
     else:
         print("Creating a character with manual input...")
         return Character(name, desc)
+
+
+def generate_name():
+    return generate("Output the name of a random famous person. The output "
+                    "should only be the name of the person. An example of a "
+                    "valid response is: 'John Smith'.", return_type=str)
 
 
 # Function that gets a description of a person or character from wikipedia and return it as a string.
@@ -162,9 +170,9 @@ def get_description_from_wikipedia(name=""):
 def load(c):
     # Verify if 'c' is a Character object or a string. Sets the name variable accordingly.
     if type(c) is Character:
-        name = c.get_name().replace(" ", "_")
+        name = c.get_name().replace(" ", "_").lower()
     elif type(c) is str:
-        name = c.replace(" ", "_")
+        name = c.replace(" ", "_").lower()
     else:
         raise TypeError("Invalid type for attribute (Must be Character or String)")
 

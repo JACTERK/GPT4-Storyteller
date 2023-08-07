@@ -30,9 +30,6 @@ def generate(msg, return_type=str, model='gpt-4'):
     if type(msg) == list:
         msglist = msg
 
-    if settings.debug:
-        print("Currently using model: " + model)
-
     # TODO: Hacky way to retry if the API fails. Fix this in the future.
     try:
         # Create a new chatcompletion using the OpenAI API
@@ -82,60 +79,6 @@ def generate_image(imagedict):
         imagedict["pass"] = False
 
     return imagedict
-
-
-# TODO: Remove
-# Takes a list q_q and a string message, and adds the new message to the beginning of the queue.
-def enqueue(q_q, message):
-    # If q_q length is greater than or equal to the value configured in settings, pop the first index.
-    if len(q_q) >= settings.q_len:
-        q_q.popleft()
-
-    # Append new message onto the end of q_q
-    q_q.append(message)
-
-    return q_q
-
-
-# TODO: Remove - Function is replaced by talk_to() in character.py
-# Takes two lists q_h (user) and q_b (bot) and generates the prompt to be passed onto API
-def promptBuilder(q_u, q_b):
-    # Prompt builder for GPT 3 (Deprecated)
-    if settings.model_gen == "davinci":
-        print("GPT 3 (Davinci) being used.")
-
-        prompt = settings.prompt + "\n"
-
-        # Loop for each message in the user queue
-        for x in range(len(q_u)):
-            prompt += "\nUser: "
-            prompt += q_u[x]
-            prompt += "\n" + settings.trigger_name + ": "
-            prompt += q_b[x - 1]
-
-        # Add final prompt
-        prompt += "\n\nUser: "
-        prompt += q_u[(len(q_u) - 1)]
-
-        prompt += "\n\n" + settings.trigger_name + ": "
-
-        return prompt
-
-    # Prompt builder for GPT 4
-    if settings.model_gen == "gpt-4":
-        print("GPT 4 being used.")
-
-        prompt = [{"role": "system", "content": settings.prompt}]
-
-        # Loop for each message in the user queue
-        for x in range(len(q_u) - 1):
-            prompt.append({"role": "user", "content": q_u[x]})
-            prompt.append({"role": "assistant", "content": q_b[x]})
-
-        # Add final prompt
-        prompt.append({"role": "user", "content": q_u[len(q_u) - 1]})
-
-        return prompt
 
 
 def log_gen(log_data):

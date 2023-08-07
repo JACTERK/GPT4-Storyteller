@@ -1,15 +1,16 @@
 # Made with <3 by Jacob Terkuc
 
 # ----------------- First Time Setup ---------------------- #
-
+# TODO: Remove setup variable
 # Change this value to 'True' if you have already configured the bot.
 setup = True
 
 # --------- Name that will trigger bot in discord -------- #
 
-trigger_name = "john"
-character_name = "John"
+# Trigger name is set by the setup.py script - Used to trigger bot and to retrieve bot object from storage.
+trigger_name = "Keanu Reeves"
 
+# TODO: Remove
 # --- Character reference for bot to function properly --- #
 
 prompt = ""
@@ -20,6 +21,7 @@ default_prompt = "Your name is " + trigger_name + ". You are a kind person who r
                  "You like to lie about most things you talk about, and become angry and defensive when people try" \
                  " to push back on you. "
 
+# TODO: Remove
 # ----------------- Text Queue Settings ------------------ #
 
 # Number of human and ai responses that will be queued. (Note: Higher values will consume more credits)
@@ -42,8 +44,8 @@ t_speed_multiplier = 2
 # ---------- Configuration for the OpenAI Model ---------- #
 
 # Advanced users only: If you don't know what these do it's best to leave them.
+# Compatable models: 'gpt-3.5-turbo' (Cheaper), 'gpt-4' (Better but more expensive)
 
-model_checker = "gpt-3.5-turbo"
 model_gen = "gpt-4"
 
 # Will cost around $0.03 to generate a single description at 1200 characters.
@@ -84,6 +86,19 @@ def update_variable(variable, value):
         # Write all lines to settings.py
         file.writelines(lines)
     print("Prompt updated. ")
+
+
+def get_value(variable):
+    # Open settings.py in read mode
+    with open("settings.py", "r") as file:
+        # Read all lines from settings.py
+        lines = file.readlines()
+        # Iterate through each line
+        for i in range(len(lines)):
+            # Check if the line starts with the variable name
+            if lines[i].startswith(variable):
+                # If it does, replace the line with the variable name and the value
+                return lines[i].split(" = ")[1].replace("\n", "")
 
 
 # Function that is used to generate a prompt using GPT 4. Function takes the string 'trigger_name' from settings.py

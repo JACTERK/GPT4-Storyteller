@@ -105,9 +105,10 @@ def t6():
 
 def t7():
     print("t7")
-    g = {"role": "user", "content": "hello"}
+    h = "1"
 
-    print(g["role"])
+    if h.isnumeric():
+        print("h is numeric")
 
 
 def t8():
@@ -134,13 +135,35 @@ def t8():
     print(myUser.get_chat_log())
 
 
+
+
 # Make the program loop. make a tui too.
 def t9():
     print("t9")
+    option = input("Would you like to create a new character? (y/n): ").lower()
+    if 'y' in option:
+        print("Yes")
 
 
+    elif 'n' in option:
+        print("No")
+
+        does_save_exist = False
+
+        # Checks if any save file(s) exists
+        for i in os.listdir("save/character"):
+            if ".character" in i:
+                does_save_exist = True
+
+        if does_save_exist:
+            print()
+
+        else:
+            print("Error: No .character files found. Please create a new character.")
 
 
+def t10():
+    print("t10")
 
 
-t8()
+t10()
