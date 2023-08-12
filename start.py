@@ -11,8 +11,8 @@ import asyncio
 import random
 from dotenv import load_dotenv
 import character
-import user
-import userlist
+import server
+import serverlist
 
 # Load Discord API Key
 load_dotenv()
@@ -25,11 +25,6 @@ discord_client = discord.Client(intents=intents)
 
 # Load Character object
 character_object = character.load(settings.trigger_name)
-
-# Load User object TODO: Change name of user object? Possibly have each user have their own object and store in list
-user_object = user.new("User", discord_client)
-
-server_list = []
 
 # TODO: Pass message into chatgpt and use the fucntion generator to call the discord api
 '''
@@ -52,7 +47,31 @@ async def on_ready():
         + "] to trigger. "
     )
 
-    # TODO: Allow server to save logs of conversations to a file
+    # Create or load server list
+    try:
+        if settings.debug:
+            print("Attempting to load server list...")
+        server_list = serverlist.load("main_server_list")
+
+    except FileNotFoundError:
+        if settings.debug:
+            print("Server list not found. Creating new server list...")
+        server_list = serverlist.new("main_server_list")
+
+        # Load servers into server list
+        for g in range(len(discord_client.guilds)):
+            server_list.append_serverlist(server.new(discord_client.guilds[g].id))
+
+    if settings.debug:
+        print("Server loaded.")
+
+
+
+
+
+
+
+
     # Get list of servers the bot is connected to
 
     for g in range(len(discord_client.guilds)):

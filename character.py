@@ -30,8 +30,6 @@ from aiLib import *
 import pickle
 import settings
 import wikipediaapi
-from user import User
-import userlist
 from collections import deque
 
 character_details = "[NAME(String), PERSONALITY(string)]"
@@ -159,7 +157,7 @@ def get_description_from_wikipedia(name=""):
             return t
         # Returns the first 2000 characters of the wikipedia page
         else:
-            return t[0:2000]
+            return t[0:int(settings.wiki_scrape_len)]
     else:
         print("Character not found")
         return None
@@ -174,7 +172,7 @@ def load(c):
     elif type(c) is str:
         name = c.replace(" ", "_").lower()
     else:
-        raise TypeError("Invalid type for attribute (Must be Character or String)")
+        raise AttributeError("Error loading Server object: Invalid type " + str(type(c)).split(" ")[1][:-1])
 
     # Try to load the character from the save file
     try:
@@ -218,16 +216,16 @@ class Character:
         self.chat_log = conversation
 
     # Value is a chat call ({'role': 'system', 'content': 'string'}), string, or a list of chat calls.
-    def append_chat_log(self, value):
+    def append_chat_log(self, message):
         if len(self.get_chat_log()) >= settings.q_len:
             self.chat_log.popleft()
 
-        if type(value) == dict:
-            self.chat_log.append(value)
-        elif type(value) == str:
-            self.chat_log.append({'role': 'system', 'content': value})
-        elif type(value) == list:
-            for i in value:
+        if type(message) == dict:
+            self.chat_log.append(message)
+        elif type(message) == str:
+            self.chat_log.append({'role': 'system', 'content': message})
+        elif type(message) == list:
+            for i in message:
                 self.chat_log.append(i)
         else:
             raise TypeError("Invalid chat log value type. Type must be string or dictionary.")
@@ -240,14 +238,9 @@ class Character:
         return "--------\nName: " + self.name + "\n\nPersonality: \n" + self.personality + "\n\nChat Log: " + \
             str(self.get_chat_log()) + "\n--------\n"
 
-    # TODO: Add a function to make each user that talks to the bot to have their own character object
-
-
-
-
-
-
     def save(self):
-        pickle.dump(self, open("save/character/" + (self.name.replace(" ", "_")).lower() + ".character", "wb"))
+        pickle.dump(self, open(settings.character_dir + (self.get_name().replace(" ", "_")).lower() +
+                               settings.character_extension, "wb"))
         if settings.debug:
-            print("Saved character to file: " + (self.name.replace(" ", "_")).lower() + ".character")
+            print("Saved character to file: " + (self.get_name().replace(" ", "_")).lower() +
+                  settings.character_extension)

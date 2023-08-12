@@ -1,8 +1,7 @@
 import aiLib
 import character
-import user
 import settings
-import userlist
+#import server
 from collections import deque
 import time
 import os
@@ -164,6 +163,8 @@ def t9():
 
 def t10():
     print("t10")
+    print(len(1023123))
+
 
 
 t10()
