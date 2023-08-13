@@ -1,0 +1,5 @@
+/venv
+/save/character/*.character
+/save/user/*.user
+.env
+/.idea

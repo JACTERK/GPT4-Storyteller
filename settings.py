@@ -5,12 +5,15 @@
 # Change this value to 'True' if you have already configured the bot.
 setup = True
 
-# --------- Name that will trigger bot in discord -------- #
+# --------------------- Basic Config --------------------- #
 
-trigger_name = "john"
+# Debug mode (Prints extra information to console)
+debug = True
 
-# --- Character reference for bot to function properly --- #
+# Trigger name (Name that will trigger the bot in discord)
+trigger_name = "Keanu Reeves"
 
+<<<<<<< HEAD
 prompt = ""
 default_response = "Sorry, I don't understand."
 
@@ -18,35 +21,40 @@ default_prompt = "Your name is " + trigger_name + ". You are a kind person who r
                  "friendly, smart, and polite manner. You like to call people 'buddy' and 'pal'." \
                  "You like to lie about most things you talk about, and become angry and defensive when people try" \
                  " to push back on you. "
+=======
+>>>>>>> remove_userlist_py
 
-# ----------------- Text Queue Settings ------------------ #
+# ---------------------- Bot Config ---------------------- #
 
-# Number of human and ai responses that will be queued. (Note: Higher values will consume more credits)
-
+# Queue length (Number of messages that will be queued)
 q_len = 3
-q_expire = 10  # 5 minutes (time in seconds) (TODO: IMPLEMENT)
 
-# ------- Sleep settings for bot typing indicator. ------- #   TODO: FIX
+# Minimum/maximum time between messages (in seconds, [min, max])
+time_to_wait = [0, 1]
 
-# Min/max time before typing indicator (in seconds)
+# Typing speed multiplier (The lower the number, the slower the bot will type)
+t_speed_multiplier = 0.5
 
-time_to_wait_min = 0
-time_to_wait_max = 1
 
-# Time multiplier bot will send typing indicator (in seconds)
-# The calculation is done by taking the length of the message and dividing it by this value
+# ------------ Descriptiopn Generation Config ------------ #
 
-t_speed_multiplier = 2
+# Description generation length (in characters)
+# Will cost around $0.03 to generate a single description at 1200 characters.
+desc_gen_len = 1200
 
-# ---------- Configuration for the OpenAI Model ---------- #
+# Default wikipedia scrape length (in characters)
+wiki_scrape_len = 2000
 
-# Advanced users only: If you don't know what these do it's best to leave them.
+# Wikipedia Long Generation (Warning: Setting to True will consume a lot of credits)
+wiki_gen_long = False
 
-model_checker = "gpt-3.5-turbo"
-model_gen = "gpt-4"
 
-# --------------- Image Generation Settings -------------- #
+# ------------------ Directory Settings ------------------ #
+# Server object storage directory
+server_dir = "save/server"
+server_extension = ".server"
 
+<<<<<<< HEAD
 # True: Generate images
 # False: Disable image generation
 
@@ -55,6 +63,11 @@ generate_images = False
 # -------------------------------------------------------- #
 
 debug_mode = True
+=======
+# Character object storage directory
+character_dir = "save/character"
+character_extension = ".character"
+>>>>>>> remove_userlist_py
 
 
 # ------------------- Helper Functions ------------------- #
@@ -78,6 +91,7 @@ def update_variable(variable, value):
     print("Prompt updated. ")
 
 
+<<<<<<< HEAD
 # Function that is used to generate a prompt using GPT 4. Function takes the string 'trigger_name' from settings.py
 # and a list of strings 'list', and returns a string 'prompt'
 # list = [adj1, adj2, adj3, adj4, desc1, truth]
@@ -135,3 +149,19 @@ def promptGenerator():
     # Updates the prompt in settings.py
     update_variable("prompt", ("'" + p + "'"))
     exit()
+=======
+# TODO: Remove this function
+# Function that takes the name of a variable, and returns the value of the variable at the line that starts with the
+# variable name in settings.py
+def get_value(variable):
+    # Open settings.py in read mode
+    with open("settings.py", "r") as file:
+        # Read all lines from settings.py
+        lines = file.readlines()
+        # Iterate through each line
+        for i in range(len(lines)):
+            # Check if the line starts with the variable name
+            if lines[i].startswith(variable):
+                # If it does, replace the line with the variable name and the value
+                return lines[i].split(" = ")[1].replace("\n", "")
+>>>>>>> remove_userlist_py
